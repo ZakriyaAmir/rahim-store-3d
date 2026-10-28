@@ -35,3 +35,13 @@ body.touch #joy{display:block}body.touch #cats{display:none}
 #lookBtn{position:fixed;right:12px;top:108px;border:0;border-radius:24px;padding:8px 14px;background:#fff;cursor:pointer;box-shadow:0 4px 14px #0005}
 body.touch #lookBtn{display:none}#cross{position:fixed;left:50%;top:50%;width:14px;height:14px;margin:-7px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 3px #000;display:none;pointer-events:none}
 body.locked #cross{display:block}#cartPanel{top:150px}
+#searchBtn{position:fixed;right:12px;top:150px;border:0;border-radius:24px;padding:8px 14px;background:#fff;cursor:pointer;box-shadow:0 4px 14px #0005}
+#cartPanel{top:195px}
+#mpStatus{position:fixed;left:12px;top:192px;background:#000b;color:#fff;font-size:12px;padding:5px 10px;border-radius:14px}
+.nm{display:block;font-size:13px;color:#444;margin:6px 0 10px}.nm input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;font-size:15px;margin-top:4px}
+#searchPanel{position:fixed;left:12px;top:12px;bottom:12px;width:360px;max-width:calc(100% - 24px);background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;z-index:13;box-shadow:0 10px 30px #0006}
+#q{padding:10px;border:1px solid #ccc;border-radius:10px;font-size:15px;margin:8px 0}#results{overflow:auto;flex:1}
+#results .dh{font-weight:700;margin:10px 0 4px;border-left:6px solid #999;padding-left:8px}
+#results button{display:flex;justify-content:space-between;gap:8px;width:100%;border:0;background:#f6f6f6;margin:2px 0;padding:6px 8px;border-radius:6px;text-align:left;cursor:pointer;font-size:13px}
+#results button:hover{background:#e8f5e9}#results small{color:#777;white-space:nowrap}
+body.touch #searchBtn{top:108px}

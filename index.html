@@ -7,16 +7,17 @@
  <div class="bar"><div id="prog"></div></div><p id="ptxt">Loading products…</p>
  <ul class="help"><li><b>W A S D</b> / <b>Arrow keys</b> – drive the cart</li><li><b>Shift</b> – go faster</li>
  <li><b>Q / E</b>, drag, or <b>L</b> (mouse-look, Esc to exit) – look around</li><li><b>Click</b> a product on a shelf – add to cart</li>
- <li><b>M</b> – full store map (click a section to jump there)</li><li><b>C</b> – open cart</li></ul>
+ <li><b>M</b> – full store map (click a section to jump there)</li><li><b>C</b> – open cart · <b>F</b> – search categories/products</li><li>Up to 10 shoppers per room see each other live</li></ul>
  <p class="mob">Mobile: use the joystick, tap products to pick.</p>
+ <label class="nm">Your name (shown to other shoppers): <input id="pname" maxlength="16"></label>
  <button id="go" disabled>Start shopping</button>
- <p class="note">Product names, prices & photos from rahimstore.com (fetched Oct 2026). Demo only – no real orders.</p></div></div>
+ <p class="note">Full rahimstore.com catalog – names, prices & photos fetched Oct 2026. Demo only – no real orders.</p></div></div>
 <div id="hud" class="hidden">
  <div id="zoneTag"></div>
  <canvas id="mini" width="220" height="170"></canvas>
  <button id="cartBtn">🛒 <span id="cnt">0</span> · Rs <span id="tot">0</span></button>
  <button id="mapBtn">🗺 Map (M)</button><button id="lookBtn">🖱 Mouse-look (L)</button><div id="cross"></div>
- <div id="cats"></div>
+ <button id="searchBtn">🔍 Find (F)</button><div id="mpStatus">…</div>
  <div id="tip"></div><div id="toast"></div>
  <div id="joy"><div id="knob"></div></div>
 </div>
@@ -24,7 +25,10 @@
  <div id="cartList"></div><div class="tot">Total: <b>Rs <span id="tot2">0</span></b></div>
  <button id="checkout">Checkout</button></div>
 <div id="mapFull" class="hidden"><div class="ph"><h2>Store Map – click a section to go there</h2><button class="x" data-close="mapFull">✕</button></div><canvas id="big" width="900" height="640"></canvas></div>
+<div id="searchPanel" class="hidden"><div class="ph"><h2>Departments &amp; categories</h2><button class="x" data-close="searchPanel">✕</button></div><input id="q" placeholder="Search category or product… e.g. Morinaga, shampoo, chips" autocomplete="off"><div id="results"></div></div>
 <div id="receipt" class="hidden"><div class="paper" id="paper"></div></div>
 <script src="js/data.js"></script>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/mp-config.js"></script>
 <script type="module" src="js/game.js"></script>
 </body></html>
