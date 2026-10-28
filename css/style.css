@@ -32,3 +32,6 @@ h1{margin:0;color:#c62828;font-size:34px}h1 span{color:#2e7d32}.sub{color:#555;m
 #knob{position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:#fffb}
 body.touch #joy{display:block}body.touch #cats{display:none}
 @media (max-width:700px){#zoneTag{top:auto;bottom:160px}#mini{width:150px;height:116px}#cartPanel{left:8px;right:8px;width:auto}}
+#lookBtn{position:fixed;right:12px;top:108px;border:0;border-radius:24px;padding:8px 14px;background:#fff;cursor:pointer;box-shadow:0 4px 14px #0005}
+body.touch #lookBtn{display:none}#cross{position:fixed;left:50%;top:50%;width:14px;height:14px;margin:-7px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 3px #000;display:none;pointer-events:none}
+body.locked #cross{display:block}#cartPanel{top:150px}

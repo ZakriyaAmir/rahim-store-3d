@@ -122,8 +122,8 @@ function avgColor(img) { const c = document.createElement('canvas'); c.width = c
 function makeMaterials(p, tex) {
   const ac = avgColor(tex.image); const side = new THREE.MeshBasicMaterial({ color: ac.clone().multiplyScalar(.82) }); const topM = new THREE.MeshBasicMaterial({ color: ac.clone().lerp(new THREE.Color(1,1,1), .25) });
   const face = new THREE.MeshBasicMaterial({ map: tex });
-  if (p.shape === 'can') { tex.wrapS = THREE.RepeatWrapping; tex.repeat.set(2, 1); return [face, new THREE.MeshBasicMaterial({ color: 0xbfc5ca }), new THREE.MeshBasicMaterial({ color: 0xbfc5ca })]; }
-  if (p.shape === 'bottle') { tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.ClampToEdgeWrapping; tex.repeat.set(2, 2.2); tex.offset.set(0, -0.2); face.color = new THREE.Color(0xffffff); return face; }
+  if (p.shape === 'can') { tex.wrapS = THREE.RepeatWrapping; tex.repeat.set(2, 1); tex.offset.x = .5; return [face, new THREE.MeshBasicMaterial({ color: 0xbfc5ca }), new THREE.MeshBasicMaterial({ color: 0xbfc5ca })]; }
+  if (p.shape === 'bottle') { tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.ClampToEdgeWrapping; tex.repeat.set(2, 2.2); tex.offset.set(.5, -0.2); face.color = new THREE.Color(0xffffff); return face; }
   return [side, side, topM, side, face, face]; // box faces: +x,-x,+y,-y,+z(front),-z
 }
 const loadStatus = { done: 0, total: PRODUCTS.length };
@@ -159,18 +159,21 @@ const cart = new THREE.Group();
   cart.add(basket); cart.userData.basket = basket;
   const handle = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, bw + .1, 5), red); handle.rotation.z = Math.PI / 2; handle.position.set(0, by + bh + .18, -bl / 2 - .2); cart.add(handle);
   for (const sx of [-1, 1]) { const arm = new THREE.Mesh(new THREE.BoxGeometry(.03, .03, .3), wire); arm.position.set(sx * bw / 2, by + bh + .1, -bl / 2 - .1); arm.rotation.x = .5; cart.add(arm); }
+  const skin = BM({ color: 0xc68e62 }), sleeve = BM({ color: 0x1565c0 });
+  for (const sx of [-1, 1]) { const hand = new THREE.Mesh(new THREE.BoxGeometry(.07, .05, .09), skin); hand.position.set(sx * .27, by + bh + .2, -bl / 2 - .22); cart.add(hand);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(.075, .075, .5), sleeve); arm.position.set(sx * .3, by + bh + .08, -bl / 2 - .45); arm.rotation.x = -.5; cart.add(arm); }
   const frame = new THREE.Mesh(new THREE.BoxGeometry(bw * .9, .04, bl * 1.05), wire); frame.position.y = .16; cart.add(frame);
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const leg = new THREE.Mesh(new THREE.BoxGeometry(.03, by - .1, .03), wire); leg.position.set(sx * bw * .42, by / 2 + .05, sz * bl * .45); cart.add(leg);
     const wh = new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, .05, 6), BM({ color: 0x222222 })); wh.rotation.z = Math.PI / 2; wh.position.set(sx * bw * .42, .07, sz * bl * .45); cart.add(wh); }
   }
 scene.add(cart);
-const player = { x: 0, z: 14.5, h: Math.PI, v: 0, camYaw: 0, r: .8 };
-cart.position.set(player.x, 0, player.z);
+const player = { x: 0, z: 15.8, h: Math.PI, v: 0, pitch: -.32, r: .35 }; const CF = 1.55, CR = .62, EYE = 1.55;
+camera.fov = 70; camera.near = .05; camera.rotation.order = 'YXZ';
 
 // ---------- input ----------
 const keys = {}; const joy = { x: 0, y: 0 };
 addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; keys[e.code] = true;
-  if (e.code === 'KeyM') toggle('#mapFull'); if (e.code === 'KeyC') toggle('#cartPanel'); if (e.code === 'Escape') ['#mapFull', '#cartPanel'].forEach(s => $(s).classList.add('hidden'));
+  if (e.code === 'KeyM') toggle('#mapFull'); if (e.code === 'KeyC') toggle('#cartPanel'); if (e.code === 'KeyL') toggleLock(); if (e.code === 'Escape') ['#mapFull', '#cartPanel'].forEach(s => $(s).classList.add('hidden'));
   if (e.code.startsWith('Arrow') || e.code === 'Space') e.preventDefault(); });
 addEventListener('keyup', e => keys[e.code] = false);
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
@@ -182,17 +185,21 @@ function pickAt(cx, cy) {
   const r = canvas.getBoundingClientRect(); ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1);
   ray.setFromCamera(ndc, camera); const hit = ray.intersectObjects(productMeshes, false)[0];
   if (!hit) return null; const p = hit.object.userData.product; const m = new THREE.Matrix4(); hit.object.getMatrixAt(hit.instanceId, m);
-  const pos = new THREE.Vector3().setFromMatrixPosition(m); const dist = Math.hypot(pos.x - player.x, pos.z - player.z);
-  return { p, pos, dist, rot: new THREE.Quaternion().setFromRotationMatrix(m), near: dist < 5.2 };
+  const pos = new THREE.Vector3().setFromMatrixPosition(m); const dist = Math.hypot(pos.x - player.x, pos.z - player.z) - .6;
+  return { p, pos, dist, rot: new THREE.Quaternion().setFromRotationMatrix(m), near: dist < 4.2 };
 }
-canvas.addEventListener('pointerdown', e => { pdown = { x: e.clientX, y: e.clientY, t: performance.now(), yaw: player.camYaw, id: e.pointerId }; ensureAudio(); });
+canvas.addEventListener('pointerdown', e => { pdown = { x: e.clientX, y: e.clientY, t: performance.now(), h: player.h, p: player.pitch, id: e.pointerId }; ensureAudio(); });
 canvas.addEventListener('pointermove', e => {
-  if (pdown && pdown.id === e.pointerId && (e.buttons || e.pointerType === 'touch')) { const dx = e.clientX - pdown.x; if (Math.abs(dx) > 6) { player.camYaw = pdown.yaw - dx * .006; pdown.drag = true; } }
+  if (pdown && pdown.id === e.pointerId && (e.buttons || e.pointerType === 'touch')) { const dx = e.clientX - pdown.x, dy = e.clientY - pdown.y; if (pdown.drag || Math.hypot(dx, dy) > 6) { player.h = pdown.h - dx * .005; player.pitch = clampP(pdown.p - dy * .004); pdown.drag = true; } }
+  if (locked) { player.h -= e.movementX * .0025; player.pitch = clampP(player.pitch - e.movementY * .0025); hover = pickAt(innerWidth / 2, innerHeight / 2); showTip(hover, innerWidth / 2, innerHeight / 2); return; }
   if (e.pointerType === 'mouse') { hover = pickAt(e.clientX, e.clientY); showTip(hover, e.clientX, e.clientY); }
 });
-canvas.addEventListener('pointerup', e => { if (pdown && !pdown.drag && performance.now() - pdown.t < 600) { const h = pickAt(e.clientX, e.clientY); if (h) { if (h.near) addToCart(h); else toast('Move closer to pick ' + h.p.name, '#555'); } } pdown = null; });
+canvas.addEventListener('pointerup', e => { if (locked) { const h = pickAt(innerWidth / 2, innerHeight / 2); if (h) { if (h.near) addToCart(h); else toast('Move closer to pick ' + h.p.name, '#555'); } pdown = null; return; } if (pdown && !pdown.drag && performance.now() - pdown.t < 600) { const h = pickAt(e.clientX, e.clientY); if (h) { if (h.near) addToCart(h); else toast('Move closer to pick ' + h.p.name, '#555'); } } pdown = null; });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-const tip = $('#tip');
+const tip = $('#tip'); let locked = false; const clampP = p => Math.max(-1.1, Math.min(.6, p));
+function toggleLock() { if (document.pointerLockElement) document.exitPointerLock(); else canvas.requestPointerLock?.(); }
+document.addEventListener('pointerlockchange', () => { locked = document.pointerLockElement === canvas; document.body.classList.toggle('locked', locked); });
+$('#lookBtn').onclick = () => toggleLock();
 function showTip(h, x, y) { canvas.style.cursor = h ? (h.near ? 'pointer' : 'not-allowed') : 'default'; if (!h) { tip.style.display = 'none'; return; }
   tip.innerHTML = `${h.p.name}<br><b>Rs ${fmt(h.p.price)}</b>${h.near ? ' · click to add' : ' · move closer'}`; tip.style.display = 'block'; tip.style.left = Math.min(x + 16, innerWidth - 270) + 'px'; tip.style.top = (y + 16) + 'px'; }
 // highlight
@@ -224,7 +231,7 @@ function landInBasket(f) {
   scene.remove(f.m); const bk = cart.userData.basket; const n = basketItems.length; if (n >= 36) { f.m.geometry = null; return; }
   const m = new THREE.Mesh(GEO[f.p.shape], f.p.mats); m.scale.setScalar(.8);
   const col = n % 3, row = Math.floor(n / 3) % 4, lay = Math.floor(n / 12);
-  m.position.set((col - 1) * .27, .2 + lay * .2, (row - 1.5) * .28); m.rotation.set(-Math.PI / 2 + .3 * (Math.random() - .5), 0, (Math.random() - .5)); bk.add(m); basketItems.push({ m, id: f.p.id }); thud();
+  m.position.set((col - 1) * .27, .2 + lay * .2, (row - 1.5) * .28); m.rotation.set(0, Math.PI + (Math.random() - .5) * .4, 0); m.position.y = .03 + heightOf(f.p.shape) * .4 + lay * .38; bk.add(m); basketItems.push({ m, id: f.p.id }); thud();
 }
 function rebuildBasket() { const bk = cart.userData.basket; basketItems.splice(0).forEach(b => bk.remove(b.m)); for (const l of cartLines.values()) for (let i = 0; i < l.q; i++) landInBasket({ m: new THREE.Object3D(), p: l.p }); }
 function totals() { let c = 0, t = 0; for (const l of cartLines.values()) { c += l.q; t += l.q * l.p.price; } return { c, t }; }
@@ -238,7 +245,7 @@ $('#checkout').onclick = () => { const { c, t } = totals(); if (!c) return; cons
   let rows = ''; for (const l of cartLines.values()) rows += `<tr><td>${l.p.name}<br><small>${l.q} × ${fmt(l.p.price)}</small></td><td>${fmt(l.q * l.p.price)}</td></tr>`;
   $('#paper').innerHTML = `<h3>RAHIM STORE</h3><p style="text-align:center;margin:2px 0">Main Boulevard A.I.T. Lahore<br>Virtual Store Receipt</p><p>Invoice: ${inv}<br>${now.toLocaleString()}</p><hr><table>${rows}</table><hr><table><tr><td>Items</td><td>${c}</td></tr><tr><td><b>TOTAL</b></td><td><b>Rs ${fmt(t)}</b></td></tr></table><p style="text-align:center">Thank you for shopping!<br><small>Demo only – no payment taken. Prices from rahimstore.com.</small></p><button id="newShop">Start new shopping</button>`;
   $('#receipt').classList.remove('hidden'); $('#cartPanel').classList.add('hidden'); beep([660, 880, 1100, 1320], .12);
-  $('#newShop').onclick = () => { cartLines.clear(); updateCartUI(); rebuildBasket(); $('#receipt').classList.add('hidden'); teleportTo(0, 14.5, Math.PI); }; };
+  $('#newShop').onclick = () => { cartLines.clear(); updateCartUI(); rebuildBasket(); $('#receipt').classList.add('hidden'); teleportTo(0, 15.8, Math.PI); }; };
 let toastT; function toast(s, bg = '#2e7d32') { const t = $('#toast'); t.textContent = s; t.style.background = bg; t.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => t.style.opacity = 0, 1600); }
 
 // ---------- map ----------
@@ -258,31 +265,38 @@ function drawMap(cv, full) {
 $('#big').addEventListener('click', e => { const cv = e.target, r = cv.getBoundingClientRect(), k = Math.min(r.width / cv.width, r.height / cv.height); const offx = (r.width - cv.width * k) / 2, offy = (r.height - cv.height * k) / 2;
   const mx = (e.clientX - r.left - offx) / k, my = (e.clientY - r.top - offy) / k, { s, ox, oz } = cv._tf; const x = (mx - ox) / s + BOUND.x0, z = (my - oz) / s + BOUND.z0;
   const zz = ZONES.find(q => Math.abs(q.cx - x) < CW / 2 && Math.abs(q.cz - z) < RD / 2); if (zz) { goZone(zz); $('#mapFull').classList.add('hidden'); } });
-function goZone(z) { teleportTo(z.cx, z.cz + 2.6, Math.PI); toast('📍 ' + z.name, z.color); }
-function teleportTo(x, z, h) { player.x = x; player.z = z; player.h = h; player.v = 0; player.camYaw = 0; }
+function goZone(z) { teleportTo(z.cx, z.cz + 3.3, Math.PI); toast('📍 ' + z.name, z.color); }
+function teleportTo(x, z, h) { player.x = x; player.z = z; player.h = h; player.v = 0; player.pitch = -.32; collide(); }
 function currentZone() { return ZONES.find(q => Math.abs(q.cx - player.x) < CW / 2 && Math.abs(q.cz - player.z) < RD / 2) || null; }
 { const c = $('#cats'); for (const z of ZONES) { const b = document.createElement('button'); b.textContent = z.name; b.style.borderColor = z.color; b.onclick = () => { goZone(z); b.blur(); }; c.appendChild(b); } }
 
 // ---------- physics ----------
-function collide() { const r = player.r;
-  player.x = Math.max(BOUND.x0 + r, Math.min(BOUND.x1 - r, player.x)); player.z = Math.max(BOUND.z0 + r, Math.min(BOUND.z1 - r, player.z));
-  let hit = false; for (const b of colliders) { const nx = Math.max(b.x0, Math.min(b.x1, player.x)), nz = Math.max(b.z0, Math.min(b.z1, player.z)); const dx = player.x - nx, dz = player.z - nz, d = Math.hypot(dx, dz);
-    if (d < r) { hit = true; if (d > 1e-4) { player.x = nx + dx / d * r; player.z = nz + dz / d * r; } else player.z = b.z1 + r; } } return hit; }
+function pushCircle(cx, cz, r) { let px = 0, pz = 0;
+  const bx0 = BOUND.x0 + r, bx1 = BOUND.x1 - r, bz0 = BOUND.z0 + r, bz1 = BOUND.z1 - r;
+  if (cx < bx0) px += bx0 - cx; if (cx > bx1) px += bx1 - cx; if (cz < bz0) pz += bz0 - cz; if (cz > bz1) pz += bz1 - cz;
+  for (const b of colliders) { const x = cx + px, z = cz + pz; const nx = Math.max(b.x0, Math.min(b.x1, x)), nz = Math.max(b.z0, Math.min(b.z1, z)); const dx = x - nx, dz = z - nz, d = Math.hypot(dx, dz);
+    if (d < r) { if (d > 1e-4) { px += dx / d * (r - d); pz += dz / d * (r - d); } else { const o = [b.x0 - x - r, b.x1 - x + r, b.z0 - z - r, b.z1 - z + r]; const k = o.map(Math.abs).indexOf(Math.min(...o.map(Math.abs))); if (k < 2) px += o[k]; else pz += o[k]; } } }
+  return [px, pz]; }
+function collide() { let hit = false;
+  for (let it = 0; it < 4; it++) { const fx = Math.sin(player.h) * CF, fz = Math.cos(player.h) * CF;
+    const [ax, az] = pushCircle(player.x, player.z, player.r); const [bx, bz] = pushCircle(player.x + fx, player.z + fz, CR);
+    const [ex, ez] = pushCircle(player.x + fx * .5, player.z + fz * .5, .45);
+    const px = ax + bx + ex, pz = az + bz + ez; if (Math.abs(px) + Math.abs(pz) < 1e-5) break; player.x += px; player.z += pz; hit = true; }
+  return hit; }
 const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(); let last = performance.now(), mapT = 0, zoneName = '';
 function step(dt) {
   const fwdIn = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) + joy.y, turnIn = (keys.KeyA || keys.ArrowLeft ? 1 : 0) - (keys.KeyD || keys.ArrowRight ? 1 : 0) - joy.x;
   const maxV = (keys.ShiftLeft || keys.ShiftRight) ? 7 : 3.6; const target = Math.max(-1, Math.min(1, fwdIn)) * maxV * (fwdIn < 0 ? .6 : 1);
   player.v += (target - player.v) * Math.min(1, dt * (target === 0 ? 5 : 2.6));
-  player.h += Math.max(-1, Math.min(1, turnIn)) * dt * 2.1 * (Math.abs(player.v) > .3 || Math.abs(fwdIn) < .1 ? 1 : 1);
-  if (keys.KeyQ) player.camYaw += dt * 1.8; if (keys.KeyE) player.camYaw -= dt * 1.8;
-  if (!pdown && !keys.KeyQ && !keys.KeyE && Math.abs(player.v) > .5) player.camYaw *= 1 - Math.min(1, dt * 1.5);
+  player.h += Math.max(-1, Math.min(1, turnIn)) * dt * 2.1; if (keys.KeyQ) player.h += dt * 1.8; if (keys.KeyE) player.h -= dt * 1.8;
   const ox = player.x, oz = player.z; player.x += Math.sin(player.h) * player.v * dt; player.z += Math.cos(player.h) * player.v * dt;
   if (collide()) { const moved = Math.hypot(player.x - ox, player.z - oz); player.v = Math.sign(player.v) * Math.min(Math.abs(player.v), moved / Math.max(dt, 1e-3)); }
-  cart.position.set(player.x, 0, player.z); cart.rotation.y = player.h;
+  collide(); cart.position.set(player.x + Math.sin(player.h) * CF, 0, player.z + Math.cos(player.h) * CF); cart.rotation.y = player.h; cart.updateMatrixWorld();
   if (rollGain) rollGain.gain.setTargetAtTime(Math.min(.25, Math.abs(player.v) * .04), actx.currentTime, .05);
-  // camera
-  const ch = player.h + player.camYaw; camPos.set(player.x - Math.sin(ch) * 4.6, 2.9, player.z - Math.cos(ch) * 4.6);
-  camera.position.lerp(camPos, Math.min(1, dt * 6)); camLook.set(player.x + Math.sin(ch) * 2.2, 1.15, player.z + Math.cos(ch) * 2.2); camera.lookAt(camLook);
+  // first-person camera (eye clamped inside store, below ceiling)
+  const bob = Math.sin(performance.now() / 160) * Math.min(.02, Math.abs(player.v) * .006);
+  camera.position.set(Math.max(BOUND.x0 + .2, Math.min(BOUND.x1 - .2, player.x)), EYE + bob, Math.max(BOUND.z0 + .2, Math.min(BOUND.z1 - .2, player.z)));
+  camera.rotation.set(player.pitch, player.h + Math.PI, 0);
   // flyers
   for (let i = flyers.length - 1; i >= 0; i--) { const f = flyers[i]; f.t += dt / .55; const to = new THREE.Vector3(0, 1, 0).applyMatrix4(cart.matrixWorld);
     const t = Math.min(1, f.t); f.m.position.lerpVectors(f.from, to, t); f.m.position.y += Math.sin(t * Math.PI) * 1.2; f.m.rotation.x += dt * 8; f.m.scale.setScalar(1 - t * .2);
@@ -300,7 +314,7 @@ scene.updateMatrixWorld(true);
 function bakeAll(root, skip) { root.traverse(o => { if (!o.isMesh || o.isInstancedMesh || skip.has(o)) return; const m = Array.isArray(o.material) ? o.material[0] : o.material; if (!m.vertexColors) return; const wp = new THREE.Vector3(); o.getWorldPosition(wp); o.geometry = bake(o.geometry.clone(), wp.y); }); }
 bakeAll(scene, new Set([floor, ceil]));
 // ---------- boot ----------
-camera.position.set(0, 2.9, 19); camera.lookAt(0, 1.2, 10);
+camera.position.set(0, EYE, 15.8); camera.rotation.set(-.32, 0, 0); cart.position.set(0, 0, 14.5); cart.rotation.y = Math.PI;
 loadProducts().then(() => { $('#ptxt').textContent = `Ready – ${PRODUCTS.length} products in ${ZONES.length} sections`; const b = $('#go'); b.disabled = false; b.focus(); });
 $('#go').onclick = () => { ensureAudio(); $('#start').classList.add('hidden'); $('#hud').classList.remove('hidden'); running = true; updateCartUI(); };
 requestAnimationFrame(loop);
