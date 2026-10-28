@@ -1,0 +1,34 @@
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:#222}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hidden{display:none!important}
+#start{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(#c62828,#5a0d0d);z-index:20}
+.card{background:#fff;border-radius:18px;padding:26px 30px;max-width:460px;width:92%;box-shadow:0 20px 60px #0007}
+h1{margin:0;color:#c62828;font-size:34px}h1 span{color:#2e7d32}.sub{color:#555;margin:6px 0 16px}
+.bar{height:10px;background:#eee;border-radius:6px;overflow:hidden}#prog{height:100%;width:0;background:linear-gradient(90deg,#2e7d32,#8bc34a);transition:width .2s}
+#ptxt{font-size:13px;color:#777}.help{padding-left:18px;font-size:14px;line-height:1.7;color:#333}.mob{font-size:13px;color:#777}
+#go{width:100%;padding:14px;font-size:18px;border:0;border-radius:12px;background:#2e7d32;color:#fff;cursor:pointer}#go:disabled{background:#aaa}
+.note{font-size:11px;color:#999;margin-bottom:0}
+#zoneTag{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000a;color:#fff;padding:6px 16px;border-radius:20px;font-weight:600}
+#mini{position:fixed;top:12px;left:12px;border-radius:10px;background:#fffe;box-shadow:0 4px 14px #0005}
+#cartBtn,#mapBtn{position:fixed;right:12px;border:0;border-radius:24px;padding:10px 16px;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px #0005}
+#cartBtn{top:12px;background:#2e7d32;color:#fff}#mapBtn{top:60px;background:#fff}
+#cats{position:fixed;left:12px;top:192px;display:flex;flex-direction:column;gap:3px;max-height:calc(100% - 210px);overflow:auto}
+#cats button{border:0;border-left:6px solid;border-radius:6px;background:#fffd;text-align:left;padding:4px 8px;font-size:12px;cursor:pointer}
+#tip{position:fixed;pointer-events:none;background:#000c;color:#fff;padding:6px 10px;border-radius:8px;font-size:13px;display:none;max-width:260px}
+#tip b{color:#ffeb3b}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2e7d32;color:#fff;padding:8px 16px;border-radius:20px;opacity:0;transition:opacity .3s}
+#cartPanel{position:fixed;right:12px;top:110px;width:330px;max-height:calc(100% - 130px);background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;box-shadow:0 10px 30px #0006;z-index:10}
+.ph{display:flex;justify-content:space-between;align-items:center}.ph h2{margin:0;font-size:18px}.x{border:0;background:none;font-size:18px;cursor:pointer}
+#cartList{overflow:auto;flex:1;margin:8px 0}.ci{display:flex;align-items:center;gap:8px;border-bottom:1px solid #eee;padding:6px 0;font-size:13px}
+.ci img{width:40px;height:40px;object-fit:contain}.ci .n{flex:1}.ci button{border:1px solid #ccc;background:#fafafa;border-radius:6px;cursor:pointer;min-width:24px}
+.ci .rm{color:#c62828}.tot{font-size:17px;text-align:right}#checkout{margin-top:8px;padding:12px;border:0;border-radius:10px;background:#c62828;color:#fff;font-size:16px;cursor:pointer}
+#mapFull{position:fixed;inset:4%;background:#fff;border-radius:14px;padding:14px;z-index:12;display:flex;flex-direction:column}
+#big{flex:1;width:100%;min-height:0;object-fit:contain;cursor:pointer}
+#receipt{position:fixed;inset:0;background:#000a;z-index:15;display:flex;align-items:center;justify-content:center}
+.paper{background:#fffdf5;font-family:ui-monospace,Consolas,monospace;width:360px;max-width:94%;max-height:90%;overflow:auto;padding:20px;font-size:13px;box-shadow:0 10px 40px #000}
+.paper h3{text-align:center;margin:0}.paper table{width:100%;border-collapse:collapse}.paper td{padding:2px 0;vertical-align:top}.paper td:last-child{text-align:right}
+.paper button{width:100%;margin-top:12px;padding:10px;border:0;border-radius:8px;background:#2e7d32;color:#fff;cursor:pointer}
+#joy{position:fixed;left:24px;bottom:24px;width:120px;height:120px;border-radius:50%;background:#fff3;border:2px solid #fff8;display:none;touch-action:none}
+#knob{position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:#fffb}
+body.touch #joy{display:block}body.touch #cats{display:none}
+@media (max-width:700px){#zoneTag{top:auto;bottom:160px}#mini{width:150px;height:116px}#cartPanel{left:8px;right:8px;width:auto}}

@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Rahim Store 3D – Virtual Shopping</title><link rel="stylesheet" href="css/style.css"></head><body>
+<canvas id="c"></canvas>
+<div id="start"><div class="card">
+ <h1>Rahim Store <span>3D</span></h1><p class="sub">Walk your trolley through a virtual supermarket and shop real products.</p>
+ <div class="bar"><div id="prog"></div></div><p id="ptxt">Loading products…</p>
+ <ul class="help"><li><b>W A S D</b> / <b>Arrow keys</b> – drive the cart</li><li><b>Shift</b> – go faster</li>
+ <li><b>Q / E</b> or right/left-drag – turn the camera</li><li><b>Click</b> a product on a shelf – add to cart</li>
+ <li><b>M</b> – full store map (click a section to jump there)</li><li><b>C</b> – open cart</li></ul>
+ <p class="mob">Mobile: use the joystick, tap products to pick.</p>
+ <button id="go" disabled>Start shopping</button>
+ <p class="note">Product names, prices & photos from rahimstore.com (fetched Oct 2026). Demo only – no real orders.</p></div></div>
+<div id="hud" class="hidden">
+ <div id="zoneTag"></div>
+ <canvas id="mini" width="220" height="170"></canvas>
+ <button id="cartBtn">🛒 <span id="cnt">0</span> · Rs <span id="tot">0</span></button>
+ <button id="mapBtn">🗺 Map (M)</button>
+ <div id="cats"></div>
+ <div id="tip"></div><div id="toast"></div>
+ <div id="joy"><div id="knob"></div></div>
+</div>
+<div id="cartPanel" class="hidden"><div class="ph"><h2>Your Cart</h2><button class="x" data-close="cartPanel">✕</button></div>
+ <div id="cartList"></div><div class="tot">Total: <b>Rs <span id="tot2">0</span></b></div>
+ <button id="checkout">Checkout</button></div>
+<div id="mapFull" class="hidden"><div class="ph"><h2>Store Map – click a section to go there</h2><button class="x" data-close="mapFull">✕</button></div><canvas id="big" width="900" height="640"></canvas></div>
+<div id="receipt" class="hidden"><div class="paper" id="paper"></div></div>
+<script src="js/data.js"></script>
+<script type="module" src="js/game.js"></script>
+</body></html>
